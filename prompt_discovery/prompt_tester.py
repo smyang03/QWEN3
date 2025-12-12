@@ -279,9 +279,16 @@ class PromptTester:
 
 if __name__ == "__main__":
     # 테스트 코드
+    import os
     import yaml
     from pathlib import Path
     import sys
+
+    # 오프라인 모드 설정 (Hugging Face)
+    os.environ['HF_HUB_OFFLINE'] = '1'
+    os.environ['TRANSFORMERS_OFFLINE'] = '1'
+    os.environ['HF_DATASETS_OFFLINE'] = '1'
+    os.environ['HF_HUB_DISABLE_TELEMETRY'] = '1'
 
     # verifier 모듈 임포트
     sys.path.insert(0, str(Path(__file__).parent.parent))
