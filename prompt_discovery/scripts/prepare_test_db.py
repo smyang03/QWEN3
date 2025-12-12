@@ -83,8 +83,8 @@ def prepare_test_db(
     """
     random.seed(seed)
 
-    # 출력 디렉토리 생성
-    output_images = output_dir / 'images'
+    # 출력 디렉토리 생성 (YOLO 표준 구조)
+    output_images = output_dir / 'JPEGImages'
     output_labels = output_dir / 'labels'
     output_images.mkdir(parents=True, exist_ok=True)
     output_labels.mkdir(parents=True, exist_ok=True)

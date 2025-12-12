@@ -34,13 +34,21 @@ class GroundTruthLoader:
         # 경로 설정
         gt_config = config.get('prompt_optimization', {}).get('ground_truth', {})
         self.gt_path = Path(gt_config.get('path', 'prompt_discovery/test_db'))
-        self.images_dir = self.gt_path / 'images'
+
+        # JPEGImages 우선, 없으면 images 사용
+        if (self.gt_path / 'JPEGImages').exists():
+            self.images_dir = self.gt_path / 'JPEGImages'
+        else:
+            self.images_dir = self.gt_path / 'images'
+
         self.labels_dir = self.gt_path / 'labels'
 
         # 클래스 맵 로드
         self.class_map = self._load_class_map()
 
         logging.info(f"GT Path: {self.gt_path}")
+        logging.info(f"Images Dir: {self.images_dir}")
+        logging.info(f"Labels Dir: {self.labels_dir}")
         logging.info(f"Classes: {list(self.class_map.values())}")
 
     def _load_class_map(self) -> Dict[int, str]:

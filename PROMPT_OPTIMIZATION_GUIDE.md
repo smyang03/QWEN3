@@ -72,7 +72,7 @@ python3 prompt_discovery/scripts/prepare_test_db.py \
 **결과:**
 ```
 prompt_discovery/test_db/
-├── images/        # GT 이미지 (클래스당 30개)
+├── JPEGImages/    # GT 이미지 (클래스당 30개, YOLO 표준)
 ├── labels/        # GT 라벨 (YOLO format)
 └── summary.yaml   # 샘플 정보
 ```
@@ -352,7 +352,8 @@ python3 verifier.py  # test_db를 input으로 설정
 ### "No GT samples found"
 ```bash
 # GT 확인
-ls prompt_discovery/test_db/images/
+ls prompt_discovery/test_db/JPEGImages/  # Linux
+dir prompt_discovery\test_db\JPEGImages  # Windows
 ls prompt_discovery/test_db/labels/
 
 # 클래스 분포 확인
