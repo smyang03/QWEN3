@@ -434,7 +434,56 @@ class LabelVerifier:
                 'mislabeled': 0,
                 'uncertain': 0
             }
-    
+
+        # 최적화된 프롬프트 로드
+        self.optimized_prompts = {}
+        prompt_opt_config = config.get('prompt_optimization', {})
+        use_optimized = prompt_opt_config.get('production', {}).get('use_optimized_prompts', False)
+
+        if use_optimized:
+            self._load_optimized_prompts()
+
+    def _load_optimized_prompts(self):
+        """최적화된 프롬프트 템플릿 로드"""
+        try:
+            templates_dir = Path(self.config.get('prompt_optimization', {}).get('templates', {}).get('dir', 'prompt_discovery/templates'))
+            current_template = templates_dir / 'current.yaml'
+
+            if not current_template.exists():
+                logging.warning(f"Optimized prompts not found: {current_template}")
+                logging.warning("Using default prompts. Run prompt optimization first.")
+                return
+
+            with open(current_template, 'r', encoding='utf-8') as f:
+                template = yaml.safe_load(f)
+
+            if 'prompts' in template:
+                for class_name, prompt_data in template['prompts'].items():
+                    if isinstance(prompt_data, dict) and 'prompt' in prompt_data:
+                        self.optimized_prompts[class_name] = prompt_data['prompt']
+                        logging.info(f"Loaded optimized prompt for '{class_name}' (acc: {prompt_data.get('accuracy', 'N/A')})")
+                    else:
+                        self.optimized_prompts[class_name] = prompt_data
+
+            logging.info(f"✓ Loaded {len(self.optimized_prompts)} optimized prompts")
+
+        except Exception as e:
+            logging.error(f"Failed to load optimized prompts: {e}")
+
+    def _build_prompt(self, class_name: str) -> str:
+        """프롬프트 생성 (최적화된 프롬프트 우선)"""
+        # 1. 최적화된 프롬프트
+        if class_name in self.optimized_prompts:
+            return self.optimized_prompts[class_name]
+
+        # 2. Fallback 프롬프트
+        fallback = self.config.get('prompt_optimization', {}).get('production', {}).get('fallback_prompt', None)
+        if fallback:
+            return fallback.format(class_name=class_name)
+
+        # 3. 기본 프롬프트
+        return f"Is this object a {class_name}? Answer only 'Yes' or 'No'."
+
     def crop_box(self, image: np.ndarray, box: BoundingBox, padding: int = 10) -> np.ndarray:
         """박스 영역 크롭"""
         h, w = image.shape[:2]
@@ -464,8 +513,8 @@ class LabelVerifier:
     
     def ask_model(self, image: Image.Image, class_name: str, retries: int = 0) -> Tuple[bool, float, str]:
         """모델에게 질문하고 실제 confidence 계산 (Logit 기반)"""
-        prompt = f"Is this object a {class_name}? Answer only 'Yes' or 'No'."
-        
+        prompt = self._build_prompt(class_name)
+
         try:
             # 메시지 구성
             messages = [
