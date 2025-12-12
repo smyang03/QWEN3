@@ -4,12 +4,19 @@ Prompt Optimization Main Script
 클래스별 최적 프롬프트를 찾아서 저장
 """
 
+import os
 import sys
 import yaml
 import logging
 import argparse
 from pathlib import Path
 from typing import Dict, List
+
+# 오프라인 모드 설정 (Hugging Face)
+os.environ['HF_HUB_OFFLINE'] = '1'
+os.environ['TRANSFORMERS_OFFLINE'] = '1'
+os.environ['HF_DATASETS_OFFLINE'] = '1'
+os.environ['HF_HUB_DISABLE_TELEMETRY'] = '1'
 
 # 상위 디렉토리를 경로에 추가
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
