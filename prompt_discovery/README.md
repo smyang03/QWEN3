@@ -22,7 +22,7 @@ prompt_discovery/
 │   └── optimize_prompts.py   # 최적화 실행 스크립트
 │
 ├── test_db/
-│   ├── images/            # GT 이미지
+│   ├── JPEGImages/        # GT 이미지 (YOLO 표준 구조)
 │   └── labels/            # GT 라벨 (YOLO format)
 │
 ├── results/               # 테스트 결과
