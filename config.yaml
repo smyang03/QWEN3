@@ -80,6 +80,36 @@ output:
   generate_report: true  # JSON 리포트 생성
   save_failed_queries: true  # 실패한 쿼리 저장
   
+# 프롬프트 최적화 설정
+prompt_optimization:
+  enabled: false  # 프롬프트 최적화 사용 여부
+
+  # Ground Truth 데이터
+  ground_truth:
+    path: "prompt_discovery/test_db"  # GT 이미지/라벨 경로
+    min_samples_per_class: 10  # 클래스당 최소 샘플 수
+
+  # 프롬프트 생성 설정
+  generation:
+    use_builtin_templates: true  # 내장 템플릿 사용
+    custom_prompts: []  # 사용자 정의 프롬프트 추가
+
+  # 테스트 설정
+  testing:
+    max_candidates: 30  # 테스트할 최대 프롬프트 수
+    save_top_n: 10  # 상위 N개 결과 저장
+
+  # 템플릿 설정
+  templates:
+    dir: "prompt_discovery/templates"
+    current: "current.yaml"
+    auto_save_best: true  # 최고 성능 프롬프트 자동 저장
+
+  # 프로덕션 설정
+  production:
+    use_optimized_prompts: false  # 최적화된 프롬프트 사용
+    fallback_prompt: "Is this object a {class_name}? Answer Yes or No."
+
 # 사용 가능한 Qwen3-VL 모델 목록
 available_models:
   - name: "Qwen3-VL-2B-Instruct"
