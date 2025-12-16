@@ -410,7 +410,18 @@ class LabelVerifier:
         
         self.verification_config = config['verification']
         self.processing_config = config['processing']
-        
+
+        # 폐색 처리 설정 로드
+        self.occlusion_config = self.verification_config.get('occlusion_handling', {})
+        self.occlusion_enabled = self.occlusion_config.get('enabled', False)
+        self.occlusion_threshold = self.occlusion_config.get('confidence_threshold_occluded', 0.5)
+        self.occlusion_classes = set(name.lower() for name in self.occlusion_config.get('classes_with_occlusion', []))
+
+        if self.occlusion_enabled:
+            logging.info(f"✓ Occlusion handling enabled for classes: {self.occlusion_classes}")
+            logging.info(f"  - Standard confidence threshold: {self.verification_config['confidence_threshold']}")
+            logging.info(f"  - Occluded objects threshold: {self.occlusion_threshold}")
+
         # 통계
         self.stats = {
             'total_images': 0,
@@ -457,13 +468,20 @@ class LabelVerifier:
             with open(current_template, 'r', encoding='utf-8') as f:
                 template = yaml.safe_load(f)
 
-            if 'prompts' in template:
-                for class_name, prompt_data in template['prompts'].items():
-                    if isinstance(prompt_data, dict) and 'prompt' in prompt_data:
-                        self.optimized_prompts[class_name] = prompt_data['prompt']
-                        logging.info(f"Loaded optimized prompt for '{class_name}' (acc: {prompt_data.get('accuracy', 'N/A')})")
-                    else:
-                        self.optimized_prompts[class_name] = prompt_data
+            # 'prompts' 키가 있으면 그 안에서 로드, 없으면 루트에서 로드
+            prompts_dict = template.get('prompts', template) if isinstance(template, dict) else {}
+
+            for class_name, prompt_data in prompts_dict.items():
+                # 코멘트나 메타데이터 무시
+                if class_name.startswith('#'):
+                    continue
+
+                if isinstance(prompt_data, dict) and 'prompt' in prompt_data:
+                    self.optimized_prompts[class_name] = prompt_data['prompt']
+                    logging.info(f"Loaded optimized prompt for '{class_name}' (acc: {prompt_data.get('accuracy', 'N/A')})")
+                elif isinstance(prompt_data, str):
+                    self.optimized_prompts[class_name] = prompt_data
+                    logging.debug(f"Loaded prompt for '{class_name}'")
 
             logging.info(f"✓ Loaded {len(self.optimized_prompts)} optimized prompts")
 
@@ -924,10 +942,17 @@ Answer in format: [INDOOR/OUTDOOR] [DAY/NIGHT]"""
         
         # 모델에게 질문
         is_correct, confidence, response = self.ask_model(pil_image, class_name)
-        
+
         # 카테고리 결정
-        threshold = self.verification_config['confidence_threshold']
-        
+        # 폐색 처리: person 클래스는 낮은 신뢰도 임계값 사용
+        is_occlusion_class = self.occlusion_enabled and class_name.lower() in self.occlusion_classes
+
+        if is_occlusion_class:
+            threshold = self.occlusion_threshold
+            logging.debug(f"  Using occlusion threshold {threshold} for {class_name} (standard: {self.verification_config['confidence_threshold']})")
+        else:
+            threshold = self.verification_config['confidence_threshold']
+
         if is_correct is None:
             category = "uncertain"
         elif confidence < threshold:
