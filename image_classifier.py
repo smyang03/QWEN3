@@ -200,6 +200,20 @@ class ImageClassifier:
         self.max_image_size = self.vlm_config.get('max_image_size', 1280)
         self.create_unknown = self.vlm_config.get('create_unknown_folder', True)
 
+        # 폐색 처리 설정
+        self.occlusion_config = self.vlm_config.get('occlusion_handling', {})
+        self.occlusion_enabled = self.occlusion_config.get('enabled', False)
+        self.occlusion_aware_prompt = self.occlusion_config.get(
+            'occlusion_aware_prompt',
+            self.prompt  # fallback to default
+        )
+        self.occlusion_threshold = self.occlusion_config.get('confidence_threshold_occluded', 0.4)
+
+        if self.occlusion_enabled:
+            logging.info("✓ Occlusion-aware classification enabled")
+            logging.info(f"  - Using specialized prompt for partially hidden persons")
+            logging.info(f"  - Occluded person confidence threshold: {self.occlusion_threshold}")
+
         # 파일명 설정
         self.filename_config = config.get('filename', {})
         self.timestamp_format = self.filename_config.get('timestamp_format', '%Y%m%d%H%M%S')
@@ -256,7 +270,14 @@ class ImageClassifier:
             detected_category, confidence, response = self._query_vlm(pil_image)
 
             # 낮은 confidence 처리
-            if confidence < self.confidence_threshold:
+            # 폐색 처리: person 감지 시 낮은 임계값 사용
+            is_person = detected_category.lower() in ['person', 'people', 'human', 'pedestrian', 'man', 'woman', 'child']
+            threshold_to_use = self.occlusion_threshold if (self.occlusion_enabled and is_person) else self.confidence_threshold
+
+            if self.occlusion_enabled and is_person:
+                logging.debug(f"{image_path.name}: Using occlusion threshold {threshold_to_use} for person (standard: {self.confidence_threshold})")
+
+            if confidence < threshold_to_use:
                 if self.create_unknown:
                     detected_category = "unknown"
                 else:
@@ -454,13 +475,16 @@ class ImageClassifier:
 
         for attempt in range(max_retries):
             try:
+                # 폐색 처리: 폐색 인식 프롬프트 사용
+                prompt_to_use = self.occlusion_aware_prompt if self.occlusion_enabled else self.prompt
+
                 # 메시지 구성
                 messages = [
                     {
                         "role": "user",
                         "content": [
                             {"type": "image", "image": image},
-                            {"type": "text", "text": self.prompt}
+                            {"type": "text", "text": prompt_to_use}
                         ]
                     }
                 ]
