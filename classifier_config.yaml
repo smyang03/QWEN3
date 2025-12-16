@@ -42,6 +42,12 @@ vlm:
   temperature: 0.3               # 생성 온도 (낮을수록 일관적)
   max_new_tokens: 32             # 최대 생성 토큰 수
 
+  # 폐색 처리 설정 (Occlusion Handling)
+  occlusion_handling:
+    enabled: true  # 폐색 인식 기능 활성화
+    occlusion_aware_prompt: "What is the main object in this image? If you see any part of a person, even if partially hidden behind objects like fences, wires, or other obstacles, answer 'person'. Otherwise, answer with one or two words only."
+    confidence_threshold_occluded: 0.4  # 폐색된 person의 낮은 신뢰도 임계값
+
 # 처리 옵션
 processing:
   show_progress: true            # 진행률 표시

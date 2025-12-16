@@ -42,6 +42,7 @@ verification:
 
 ## 변경된 파일
 
+### Verifier (YOLO 라벨 검증)
 1. **config.yaml** - 폐색 처리 설정 추가
 2. **prompt_discovery/templates/current.yaml** - 폐색 인식 프롬프트 추가
 3. **verifier.py** - 폐색 처리 로직 구현:
@@ -49,9 +50,18 @@ verification:
    - `verify_single_box`: 동적 신뢰도 임계값 적용
    - `_load_optimized_prompts`: 프롬프트 로딩 개선
 
+### Classifier (크롭 이미지 분류)
+4. **classifier_config.yaml** - 폐색 처리 설정 추가
+5. **image_classifier.py** - 폐색 처리 로직 구현:
+   - `__init__`: 폐색 설정 로드
+   - `_query_vlm`: 폐색 인식 프롬프트 사용
+   - `classify_image`: person 감지 시 낮은 신뢰도 임계값 적용
+
 ## 사용 방법
 
-### 활성화 (기본값: 켜짐)
+### Verifier 설정 (config.yaml)
+
+#### 활성화 (기본값: 켜짐)
 
 ```yaml
 verification:
@@ -59,7 +69,7 @@ verification:
     enabled: true
 ```
 
-### 비활성화 (기존 방식 사용)
+#### 비활성화 (기존 방식 사용)
 
 ```yaml
 verification:
@@ -67,7 +77,7 @@ verification:
     enabled: false
 ```
 
-### 신뢰도 임계값 조정
+#### 신뢰도 임계값 조정
 
 더 많은 폐색 케이스를 잡으려면:
 ```yaml
@@ -79,11 +89,40 @@ confidence_threshold_occluded: 0.4  # 더 낮게 (더 많이 잡음)
 confidence_threshold_occluded: 0.6  # 더 높게 (더 정확)
 ```
 
-### 다른 클래스 추가
+#### 다른 클래스 추가
 
 다른 클래스도 폐색 처리가 필요하면:
 ```yaml
 classes_with_occlusion: ["person", "people", "human", "pedestrian", "car", "vehicle"]
+```
+
+### Classifier 설정 (classifier_config.yaml)
+
+#### 활성화 (기본값: 켜짐)
+
+```yaml
+vlm:
+  occlusion_handling:
+    enabled: true
+    occlusion_aware_prompt: "What is the main object in this image? If you see any part of a person, even if partially hidden behind objects like fences, wires, or other obstacles, answer 'person'. Otherwise, answer with one or two words only."
+    confidence_threshold_occluded: 0.4
+```
+
+#### 비활성화 (기존 방식 사용)
+
+```yaml
+vlm:
+  occlusion_handling:
+    enabled: false
+```
+
+#### 프롬프트 커스터마이징
+
+다른 프롬프트를 사용하려면:
+```yaml
+vlm:
+  occlusion_handling:
+    occlusion_aware_prompt: "당신의 커스텀 프롬프트"
 ```
 
 ## 작동 방식
@@ -94,6 +133,8 @@ classes_with_occlusion: ["person", "people", "human", "pedestrian", "car", "vehi
 4. **검증**: VLM이 폐색을 고려한 프롬프트로 검증 수행
 
 ## 로그 예시
+
+### Verifier 로그
 
 폐색 처리가 활성화되면 다음과 같은 로그가 표시됩니다:
 
@@ -107,6 +148,21 @@ classes_with_occlusion: ["person", "people", "human", "pedestrian", "car", "vehi
 검증 시:
 ```
 Using occlusion threshold 0.5 for person (standard: 0.6)
+```
+
+### Classifier 로그
+
+폐색 처리가 활성화되면:
+
+```
+✓ Occlusion-aware classification enabled
+  - Using specialized prompt for partially hidden persons
+  - Occluded person confidence threshold: 0.4
+```
+
+분류 시:
+```
+person_image.jpg: Using occlusion threshold 0.4 for person (standard: 0.5)
 ```
 
 ## 테스트 방법
