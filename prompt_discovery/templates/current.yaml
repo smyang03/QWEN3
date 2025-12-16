@@ -1,0 +1,47 @@
+# Optimized Prompts for YOLO Label Verification
+# 폐색(Occlusion) 인식을 고려한 프롬프트
+
+person: "Is there a person visible in this image, even if partially hidden or behind objects like fences or wires? Answer only 'Yes' or 'No'."
+people: "Is there a person visible in this image, even if partially hidden or behind objects like fences or wires? Answer only 'Yes' or 'No'."
+human: "Is there a human visible in this image, even if partially hidden or behind objects like fences or wires? Answer only 'Yes' or 'No'."
+pedestrian: "Is there a pedestrian visible in this image, even if partially hidden or behind objects like fences or wires? Answer only 'Yes' or 'No'."
+
+# 다른 클래스들은 기본 프롬프트 사용
+slip: "Is this object showing a slip or fall event? Answer only 'Yes' or 'No'."
+fall: "Is this object showing a slip or fall event? Answer only 'Yes' or 'No'."
+slipping: "Is this object showing a slip or fall event? Answer only 'Yes' or 'No'."
+falling: "Is this object showing a slip or fall event? Answer only 'Yes' or 'No'."
+
+head: "Is this object a head or face? Answer only 'Yes' or 'No'."
+face: "Is this object a head or face? Answer only 'Yes' or 'No'."
+
+"safety helmet": "Is this object a safety helmet or hard hat? Answer only 'Yes' or 'No'."
+"hard hat": "Is this object a safety helmet or hard hat? Answer only 'Yes' or 'No'."
+helmet: "Is this object a safety helmet or hard hat? Answer only 'Yes' or 'No'."
+"construction helmet": "Is this object a safety helmet or hard hat? Answer only 'Yes' or 'No'."
+
+car: "Is this object a car or automobile? Answer only 'Yes' or 'No'."
+automobile: "Is this object a car or automobile? Answer only 'Yes' or 'No'."
+vehicle: "Is this object a vehicle? Answer only 'Yes' or 'No'."
+
+bus: "Is this object a bus? Answer only 'Yes' or 'No'."
+coach: "Is this object a bus? Answer only 'Yes' or 'No'."
+
+truck: "Is this object a truck? Answer only 'Yes' or 'No'."
+lorry: "Is this object a truck? Answer only 'Yes' or 'No'."
+"cargo truck": "Is this object a truck? Answer only 'Yes' or 'No'."
+
+forklift: "Is this object a forklift? Answer only 'Yes' or 'No'."
+"lift truck": "Is this object a forklift? Answer only 'Yes' or 'No'."
+
+chair: "Is this object a chair? Answer only 'Yes' or 'No'."
+seat: "Is this object a chair or seat? Answer only 'Yes' or 'No'."
+
+bird: "Is this object a bird? Answer only 'Yes' or 'No'."
+
+animal: "Is this object an animal? Answer only 'Yes' or 'No'."
+cat: "Is this object a cat? Answer only 'Yes' or 'No'."
+dog: "Is this object a dog? Answer only 'Yes' or 'No'."
+pet: "Is this object a pet animal? Answer only 'Yes' or 'No'."
+
+unknown: "What is this object? Answer with a single word or short phrase."

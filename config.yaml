@@ -31,15 +31,22 @@ verification:
   mode: "single"  # "single" 또는 "batch"
   batch_size: 8   # batch 모드일 때 한 번에 처리할 박스 수
   crop_method: "crop"  # "crop" 또는 "full_image"
-  
+
   # Confidence 설정
   confidence_threshold: 0.6  # 신뢰도 임계값
   create_uncertain_folder: true  # 애매한 경우 별도 폴더 생성
-  
+
   # 이미지 크롭 설정
   crop_padding: 10  # 박스 주변 패딩 (픽셀)
   crop_min_size: 50  # 최소 크롭 크기 (픽셀)
   max_image_size: 1280  # 모델 입력 최대 크기
+
+  # 폐색 처리 설정 (Occlusion Handling)
+  occlusion_handling:
+    enabled: true  # 폐색 인식 기능 활성화
+    use_context_prompt: true  # 컨텍스트 인식 프롬프트 사용
+    confidence_threshold_occluded: 0.5  # 폐색된 객체의 낮은 신뢰도 임계값
+    classes_with_occlusion: ["person", "people", "human", "pedestrian"]  # 폐색 처리할 클래스
   
 # 자동 라벨 수정 설정
 auto_correction:
@@ -107,7 +114,7 @@ prompt_optimization:
 
   # 프로덕션 설정
   production:
-    use_optimized_prompts: false  # 최적화된 프롬프트 사용
+    use_optimized_prompts: true  # 최적화된 프롬프트 사용
     fallback_prompt: "Is this object a {class_name}? Answer Yes or No."
 
 # 사용 가능한 Qwen3-VL 모델 목록
